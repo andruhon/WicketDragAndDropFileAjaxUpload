@@ -56,16 +56,16 @@
                 });
 
                 // Wicket.Ajax.ajax will simply submit a multipart form into the iframe, which we don't want
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', attrs['u'] + "&wicket-ajax=true&wicket-ajax-baseurl=" + Wicket.Form.encode(Wicket.Ajax.baseUrl || '.'), true);
-                xhr.send(formData);
-                xhr.addEventListener("load", function() {console.log(arguments)})
-                // Wicket.Ajax.ajax({
-                //     u: attrs.u,
-                //     m: 'POST',
-                //     mp: true,
-                //     npd: formData
-                // });
+                // var xhr = new XMLHttpRequest();
+                // xhr.open('POST', attrs['u'] + "&wicket-ajax=true&wicket-ajax-baseurl=" + Wicket.Form.encode(Wicket.Ajax.baseUrl || '.'), true);
+                // xhr.send(formData);
+                // xhr.addEventListener("load", function() {console.log(arguments)})
+                Wicket.Ajax.ajax({
+                    u: attrs.u,
+                    m: 'POST',
+                    mp: true,
+                    npd: formData
+                });
 
             } else {
                 Wicket.Log.error("No files to upload " + dropAreaId);
