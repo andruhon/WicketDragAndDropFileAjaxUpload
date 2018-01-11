@@ -1,6 +1,6 @@
 body, p, li, a { font-family: Garamond, times, serif;font-size:13pt;}
 h1, h2, h3 { font-family: Lato, arial, serif; }
-body { margin:0; padding:2em;}
+body { margin:0; padding:2em; background: white; color: black;}
 a, a:visited, a:hover, a:active {
 	color : #6493D2;
 }
@@ -13,4 +13,18 @@ h3 {
 	padding : 0; margin:0;
 	font-size:24pt;
 	color:#092E67;
+}
+.dragAndDropArea__dragText {
+	display: none;
+}
+.wicket-file-drag-and-drop--supported {
+	border: 1px dashed grey;
+	padding: 1em;
+    display: inline-block;
+}
+.wicket-file-drag-and-drop--drag-over {
+    background: paleturquoise;
+}
+.wicket-file-drag-and-drop--supported .dragAndDropArea__dragText {
+	display: inline-block;
 }
