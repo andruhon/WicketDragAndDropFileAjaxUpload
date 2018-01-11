@@ -1,0 +1,16 @@
+body, p, li, a { font-family: Garamond, times, serif;font-size:13pt;}
+h1, h2, h3 { font-family: Lato, arial, serif; }
+body { margin:0; padding:2em;}
+a, a:visited, a:hover, a:active {
+	color : #6493D2;
+}
+h2 {
+	padding : 0; margin:0;
+	font-size:36pt;
+	color:#FF5500;
+}
+h3 {
+	padding : 0; margin:0;
+	font-size:24pt;
+	color:#092E67;
+}

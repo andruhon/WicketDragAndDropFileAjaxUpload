@@ -1,0 +1,21 @@
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>Drag and Drop Upload Event example</title>
+    <link rel="stylesheet" href="/style.css" type="text/css" media="screen" title="Stylesheet"/>
+</head>
+<body>
+<h2>Event Demo</h2>
+see also <a wicket:id="submittingDemoLink">Submitting Demo</a>
+<form wicket:id="form">
+    <div wicket:id="dragAndDropArea">
+        <input wicket:id="files" type="file" multiple="multiple"/>
+        <span class="dragAndDropArea__dragText">or drag them here</span>
+    </div>
+    <!--button wicket:id="submit">submit</button-->
+</form>
+<ul wicket:id="uploads">
+    <li wicket:id="uploadItem"><span wicket:id="filename" /></li>
+</ul>
+</body>
+</html>
