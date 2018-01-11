@@ -287,6 +287,178 @@
              * @type {number}
              */
             FunctionsExecuter.DEPTH_LIMIT = 1000;
+
+            /**
+             * Handles execution of Ajax calls.
+             *
+             * @param {Object} attrs - the Ajax request attributes configured at the server side
+             */
+            Wicket.Ajax.Call.prototype.doAjax = function (attrs) {
+
+                var
+                    // the headers to use for each Ajax request
+                    headers = {
+                        'Wicket-Ajax': 'true',
+                        'Wicket-Ajax-BaseURL': getAjaxBaseUrl()
+                    },
+
+                    // the request (extra) parameters
+                    data = this._asParamArray(attrs.ep),
+
+                    self = this,
+
+                    // the precondition to use if there are no explicit ones
+                    defaultPrecondition = [ function (attributes) {
+                        if (attributes.c) {
+                            if (attributes.f) {
+                                return Wicket.$$(attributes.c) && Wicket.$$(attributes.f);
+                            } else {
+                                return Wicket.$$(attributes.c);
+                            }
+                        }
+                        return true;
+                    }],
+
+                    // a context that brings the common data for the success/fialure/complete handlers
+                    context = {
+                        attrs: attrs,
+
+                        // initialize the array for steps (closures that execute each action)
+                        steps: []
+                    },
+                    we = Wicket.Event,
+                    topic = we.Topic;
+
+                if (Wicket.Focus.lastFocusId) {
+                    headers["Wicket-FocusedElementId"] = Wicket.Focus.lastFocusId;
+                }
+
+                self._executeHandlers(attrs.bh, attrs);
+                we.publish(topic.AJAX_CALL_BEFORE, attrs);
+
+                var preconditions = attrs.pre || [];
+                preconditions = defaultPrecondition.concat(preconditions);
+                if (jQuery.isArray(preconditions)) {
+
+                    var that = this._getTarget(attrs);
+
+                    for (var p = 0; p < preconditions.length; p++) {
+
+                        var precondition = preconditions[p];
+                        var result;
+                        if (jQuery.isFunction(precondition)) {
+                            result = precondition.call(that, attrs);
+                        } else {
+                            result = new Function(precondition).call(that, attrs);
+                        }
+                        if (result === false) {
+                            Wicket.Log.info("Ajax request stopped because of precondition check, url: " + attrs.u);
+                            self.done(attrs);
+                            return false;
+                        }
+                    }
+                }
+
+                we.publish(topic.AJAX_CALL_PRECONDITION, attrs);
+
+                if (attrs.mp) { // multipart form. jQuery.ajax() doesn't help here ...
+                    var ret = self.submitMultipartForm(context);
+                    return ret;
+                }
+
+                if (attrs.f) {
+                    // serialize the form with id == attrs.f
+                    var form = Wicket.$(attrs.f);
+                    data = data.concat(Wicket.Form.serializeForm(form));
+
+                    // set the submitting component input name
+                    if (attrs.sc) {
+                        var scName = attrs.sc;
+                        data = data.concat({name: scName, value: 1});
+                    }
+
+                } else if (attrs.c && !jQuery.isWindow(attrs.c)) {
+                    // serialize just the form component with id == attrs.c
+                    var el = Wicket.$(attrs.c);
+                    data = data.concat(Wicket.Form.serializeElement(el, attrs.sr));
+                }
+
+                // convert to URL encoded string
+                data = jQuery.param(data);
+
+                // execute the request
+                var jqXHR = jQuery.ajax({
+                    url: attrs.u,
+                    type: attrs.m,
+                    context: self,
+                    beforeSend: function (jqXHR, settings) {
+
+                        // collect the dynamic extra parameters
+                        if (jQuery.isArray(attrs.dep)) {
+                            var queryString,
+                                separator;
+
+                            queryString = this._calculateDynamicParameters(attrs);
+                            if (settings.type.toLowerCase() === 'post') {
+                                separator = settings.data.length > 0 ? '&' : '';
+                                settings.data = settings.data + separator + queryString;
+                                jqXHR.setRequestHeader("Content-Type", settings.contentType);
+                            } else {
+                                separator = settings.url.indexOf('?') > -1 ? '&' : '?';
+                                settings.url = settings.url + separator + queryString;
+                            }
+                        }
+
+                        self._executeHandlers(attrs.bsh, attrs, jqXHR, settings);
+                        we.publish(topic.AJAX_CALL_BEFORE_SEND, attrs, jqXHR, settings);
+
+                        if (attrs.i) {
+                            // show the indicator
+                            Wicket.DOM.showIncrementally(attrs.i);
+                        }
+                    },
+                    data: data,
+                    dataType: attrs.dt,
+                    async: attrs.async,
+                    timeout: attrs.rt,
+                    cache: false,
+                    headers: headers,
+                    success: function(data, textStatus, jqXHR) {
+                        if (attrs.wr) {
+                            self.processAjaxResponse(data, textStatus, jqXHR, context);
+                        } else {
+                            self._executeHandlers(attrs.sh, attrs, jqXHR, data, textStatus);
+                            we.publish(topic.AJAX_CALL_SUCCESS, attrs, jqXHR, data, textStatus);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorMessage) {
+                        self.failure(context, jqXHR, errorMessage, textStatus);
+                    },
+                    complete: function (jqXHR, textStatus) {
+
+                        context.steps.push(jQuery.proxy(function (notify) {
+                            if (attrs.i && context.isRedirecting !== true) {
+                                Wicket.DOM.hideIncrementally(attrs.i);
+                            }
+
+                            self._executeHandlers(attrs.coh, attrs, jqXHR, textStatus);
+                            we.publish(topic.AJAX_CALL_COMPLETE, attrs, jqXHR, textStatus);
+
+                            self.done(attrs);
+                            return FunctionsExecuter.DONE;
+                        }, self));
+
+                        var executer = new FunctionsExecuter(context.steps);
+                        executer.start();
+                    }
+                });
+
+                // execute after handlers right after the Ajax request is fired
+                self._executeHandlers(attrs.ah, attrs);
+                we.publish(topic.AJAX_CALL_AFTER, attrs);
+
+                return jqXHR;
+            }
         }
 
     };
