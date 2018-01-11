@@ -302,8 +302,8 @@
                         'Wicket-Ajax-BaseURL': getAjaxBaseUrl()
                     },
 
-                    // the request (extra) parameters
-                    data = this._asParamArray(attrs.ep),
+                    // the request (extra) parameters or non processed data
+                    data = attrs.npd || this._asParamArray(attrs.ep),
 
                     self = this,
 
@@ -361,30 +361,32 @@
 
                 we.publish(topic.AJAX_CALL_PRECONDITION, attrs);
 
-                if (attrs.mp) { // multipart form. jQuery.ajax() doesn't help here ...
+                if (attrs.mp && !attrs.npd) { // multipart form. jQuery.ajax() doesn't help here ...
                     var ret = self.submitMultipartForm(context);
                     return ret;
                 }
 
-                if (attrs.f) {
-                    // serialize the form with id == attrs.f
-                    var form = Wicket.$(attrs.f);
-                    data = data.concat(Wicket.Form.serializeForm(form));
+                if (!attrs.npd) {
+                    if (attrs.f) {
+                        // serialize the form with id == attrs.f
+                        var form = Wicket.$(attrs.f);
+                        data = data.concat(Wicket.Form.serializeForm(form));
 
-                    // set the submitting component input name
-                    if (attrs.sc) {
-                        var scName = attrs.sc;
-                        data = data.concat({name: scName, value: 1});
+                        // set the submitting component input name
+                        if (attrs.sc) {
+                            var scName = attrs.sc;
+                            data = data.concat({name: scName, value: 1});
+                        }
+
+                    } else if (attrs.c && !jQuery.isWindow(attrs.c)) {
+                        // serialize just the form component with id == attrs.c
+                        var el = Wicket.$(attrs.c);
+                        data = data.concat(Wicket.Form.serializeElement(el, attrs.sr));
                     }
 
-                } else if (attrs.c && !jQuery.isWindow(attrs.c)) {
-                    // serialize just the form component with id == attrs.c
-                    var el = Wicket.$(attrs.c);
-                    data = data.concat(Wicket.Form.serializeElement(el, attrs.sr));
+                    // convert to URL encoded string
+                    data = jQuery.param(data);
                 }
-
-                // convert to URL encoded string
-                data = jQuery.param(data);
 
                 // execute the request
                 var jqXHR = jQuery.ajax({
@@ -422,6 +424,8 @@
                     async: attrs.async,
                     timeout: attrs.rt,
                     cache: false,
+                    contentType: attrs.npd ? false : undefined,
+                    processData: attrs.npd ? false : undefined,
                     headers: headers,
                     success: function(data, textStatus, jqXHR) {
                         if (attrs.wr) {
