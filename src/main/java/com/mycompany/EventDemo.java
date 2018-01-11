@@ -50,7 +50,7 @@ public class EventDemo extends WebPage {
             }
         };
         form.setMultiPart(true);
-        form.setFileMaxSize(Bytes.bytes(50000));
+        form.setFileMaxSize(Bytes.bytes(5000000));
         add(form);
 
         // TODO progress indicator see UploadProgressBar
@@ -59,13 +59,14 @@ public class EventDemo extends WebPage {
         filesField = new FileUploadField("files");
         dragAndDropArea.add(filesField);
 
-        filesField.add(new DragAndDropFileAjaxUploadBehavior(dragAndDropArea) {
+        filesField.add(new DragAndDropFileAjaxUploadBehavior(dragAndDropArea, true) {
             @Override
             protected void onFilesUpload(AjaxRequestTarget target, List<FileUpload> fileUploads) {
                 System.out.println("onFileUpload");
                 System.out.println(fileUploads);
                 fileNamesModel.getObject().addAll(fileUploads.stream().map(FileUpload::getClientFileName).collect(Collectors.toList()));
-                target.add(uploads);
+                filesField.setModelValue(null);
+                target.add(dragAndDropArea, filesField, uploads);
             }
 
             @Override

@@ -13,6 +13,7 @@
     Wicket.Ajax.DragAndDropFileUpload = function (attrs) {
         // f - form id, u - upload url, dropArea - drop areaId
         var dropAreaId = attrs['dropArea'];
+        var onChangeUpload = attrs['onChangeUpload'];
         var fileUploadComponentId = attrs['c'];
         var dropArea = document.getElementById(dropAreaId);
         var fileUpload = document.getElementById(fileUploadComponentId);
@@ -27,46 +28,54 @@
             ev.preventDefault();
             Wicket.Log.info("DragAndDropFileUpload drop " + dropAreaId);
             var dt = ev.dataTransfer;
-            var formData = new FormData();
+            var files = dt.items ? prepareFilesToUploadFromDataTransferItemList(dt.items) : prepareFilesToUpload(dt.files);
+            uploadFiles(files);
+        }
+
+        /**
+         * Prepare files array from DataTransferItemList or FilesList
+         */
+        function prepareFilesToUploadFromDataTransferItemList(dataItems) {
             var files = [];
-            var i;
-            if (dt.items) {
-                // DataTransferItemList
-                for (i = 0; i < dt.items.length; i++) {
-                    if (dt.items[i].kind == "file") {
-                        var f = dt.items[i].getAsFile();
+            if (dataItems && dataItems.length > 0) {
+                for (var i = 0; i < dataItems.length; i++) {
+                    if (dataItems[i].kind == "file") {
+                        var f = dataItems[i].getAsFile();
                         Wicket.Log.info("... file[" + i + "].name = " + f.name);
                         files.push(f);
-                        // formData.append(attrs['c']+"[]", f);
                     }
                 }
-            } else {
-                // DataTransfer
-                for (i = 0; i < dt.files.length; i++) {
-                    Wicket.Log.info("... file[" + i + "].name = " + dt.files[i].name);
-                    files.push(dt.files[i]);
-                    // formData.append(attrs['c']+"[]", dt.files[i]);
+            }
+            return files;
+        }
+
+        /**
+         * Prepare files array from DataTransfer
+         */
+        function prepareFilesToUpload(filesList) {
+            // could be Array.from
+            var files = [];
+            if (filesList && filesList.length > 0 ) {
+                for (var i = 0; i < filesList.length; i++) {
+                    Wicket.Log.info("... file[" + i + "].name = " + filesList[i].name);
+                    files.push(filesList[i]);
                 }
             }
+            return files;
+        }
 
-            if (files.length > 0) {
-                // formData.append(attrs['f']+"_hf_0","");
+        function uploadFiles(files) {
+            if (files && files.length > 0) {
+                var formData = new FormData();
                 files.forEach(function (f) {
                     formData.append(fileUpload.getAttribute("name"), f)
                 });
-
-                // Wicket.Ajax.ajax will simply submit a multipart form into the iframe, which we don't want
-                // var xhr = new XMLHttpRequest();
-                // xhr.open('POST', attrs['u'] + "&wicket-ajax=true&wicket-ajax-baseurl=" + Wicket.Form.encode(Wicket.Ajax.baseUrl || '.'), true);
-                // xhr.send(formData);
-                // xhr.addEventListener("load", function() {console.log(arguments)})
                 Wicket.Ajax.ajax({
                     u: attrs.u,
                     m: 'POST',
                     mp: true,
                     npd: formData
                 });
-
             } else {
                 Wicket.Log.error("No files to upload " + dropAreaId);
             }
@@ -75,6 +84,9 @@
         function changeHandler(ev) {
             ev.preventDefault();
             Wicket.Log.info("DragAndDropFileUpload change " + dropAreaId);
+            if (fileUpload.files && fileUpload.files.length > 0) {
+                uploadFiles(prepareFilesToUpload(fileUpload.files))
+            }
         }
 
         function dragOverHandler(ev) {
@@ -93,13 +105,8 @@
             dropArea.classList.remove("wicket-file-drag-and-drop--drag-over");
             var dt = ev.dataTransfer;
             if (dt.items) {
-                // Use DataTransferItemList interface to remove the drag data
-                // for (var i = 0; i < dt.items.length; i++) {
-                //     dt.items.remove(i); // explodes
-                // }
                 dt.items.clear();
             } else {
-                // Use DataTransfer interface to remove the drag data
                 dt.clearData();
             }
         }
@@ -109,6 +116,9 @@
         dropArea.addEventListener("dragenter", dragEnterHandler);
         dropArea.addEventListener("dragleave", dragEndHandler);
         dropArea.addEventListener("dragend", dragEndHandler);
+        if (onChangeUpload) {
+            fileUpload.addEventListener("change", changeHandler);
+        }
 
         // This block contains copy-paste from Wicket 8 wicket-ajax-jquery.js
         {
@@ -124,8 +134,8 @@
             };
 
             replaceAll = function (str, from, to) {
-                var regex = new RegExp(from.replace( /\W/g ,'\\$&' ), 'g');
-                return str.replace(regex,to);
+                var regex = new RegExp(from.replace(/\W/g, '\\$&'), 'g');
+                return str.replace(regex, to);
             };
 
             /**
@@ -136,7 +146,7 @@
              */
             createIFrame = function (iframeName) {
                 // WICKET-6340 properly close tag for XHTML markup
-                var $iframe = jQuery('<iframe name="'+iframeName+'" id="'+iframeName+
+                var $iframe = jQuery('<iframe name="' + iframeName + '" id="' + iframeName +
                     '" src="about:blank" style="position: absolute; top: -9999px; left: -9999px;"></iframe>');
                 return $iframe[0];
             };
@@ -308,7 +318,7 @@
                     self = this,
 
                     // the precondition to use if there are no explicit ones
-                    defaultPrecondition = [ function (attributes) {
+                    defaultPrecondition = [function (attributes) {
                         if (attributes.c) {
                             if (attributes.f) {
                                 return Wicket.$$(attributes.c) && Wicket.$$(attributes.f);
@@ -427,7 +437,7 @@
                     contentType: attrs.npd ? false : undefined,
                     processData: attrs.npd ? false : undefined,
                     headers: headers,
-                    success: function(data, textStatus, jqXHR) {
+                    success: function (data, textStatus, jqXHR) {
                         if (attrs.wr) {
                             self.processAjaxResponse(data, textStatus, jqXHR, context);
                         } else {
@@ -435,7 +445,7 @@
                             we.publish(topic.AJAX_CALL_SUCCESS, attrs, jqXHR, data, textStatus);
                         }
                     },
-                    error: function(jqXHR, textStatus, errorMessage) {
+                    error: function (jqXHR, textStatus, errorMessage) {
                         self.failure(context, jqXHR, errorMessage, textStatus);
                     },
                     complete: function (jqXHR, textStatus) {

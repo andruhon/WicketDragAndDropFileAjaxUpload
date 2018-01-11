@@ -26,11 +26,21 @@ public abstract class DragAndDropFileAjaxUploadBehavior extends AjaxEventBehavio
 
     private static final ResourceReference JS = new JavaScriptResourceReference(DragAndDropFileAjaxUploadBehavior.class, "res/wicket-drag-and-drop-file-upload.js");
     private final Component dropArea;
+    private final boolean onChangeUpload;
 
     public DragAndDropFileAjaxUploadBehavior(WebMarkupContainer dropArea) {
+        this(dropArea, false);
+    }
+
+    /**
+     * @param dropArea
+     * @param onChangeUpload - auto upload on file input change
+     */
+    public DragAndDropFileAjaxUploadBehavior(WebMarkupContainer dropArea, boolean onChangeUpload) {
         super("drop");
         Args.notNull(dropArea, "dropArea");
         this.dropArea = dropArea;
+        this.onChangeUpload = onChangeUpload;
         // TODO add check component
     }
 
@@ -41,7 +51,8 @@ public abstract class DragAndDropFileAjaxUploadBehavior extends AjaxEventBehavio
                 "dropArea:'" + dropArea.getMarkupId() + "'," +
                 "c:'" + getFileUploadField().getMarkupId() + "'," +
                 "f:'" + getFileUploadField().getForm().getMarkupId() + "'," +
-                "u:'" + getCallbackUrl() + "'" +
+                "u:'" + getCallbackUrl() + "'," +
+                "onChangeUpload: " + (onChangeUpload ? "true" : "false") +
             "})";
     }
 
