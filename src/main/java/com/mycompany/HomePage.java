@@ -9,5 +9,6 @@ public class HomePage extends WebPage {
     public HomePage() {
         add(new BookmarkablePageLink<SubmittingDemo>("submittingDemoLink", SubmittingDemo.class));
         add(new BookmarkablePageLink<SubmittingDemo>("eventDemoLink", EventDemo.class));
+        add(new BookmarkablePageLink<SubmittingDemo>("simpleFormLink", SimpleForm.class));
     }
 }
