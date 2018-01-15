@@ -15,6 +15,7 @@ public class WicketApplication extends WebApplication
 	public void init()
 	{
 		super.init();
+		mountPage("/simpleform", SimpleForm.class);
 		mountPage("/eventdemo", EventDemo.class);
 		mountPage("/submittingdemo", SubmittingDemo.class);
 

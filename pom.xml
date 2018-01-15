@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>org.apache.wicket</groupId>
 			<artifactId>wicket-extensions</artifactId>
-			<version>7.9.0</version>
+			<version>${wicket.version}</version>
 		</dependency>
 		<!-- OPTIONAL DEPENDENCY
 		<dependency>

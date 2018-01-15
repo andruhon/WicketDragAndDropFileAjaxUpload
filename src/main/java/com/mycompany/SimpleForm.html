@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:wicket="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple form without multipart</title>
+</head>
+<body>
+<h2>Simple Form</h2>
+<form wicket:id="form">
+    <div>
+        <div>
+            <input wicket:id="textField"/>
+        </div>
+        <div>
+            <textarea wicket:id="textArea"></textarea>
+        </div>
+        <div>
+            <select wicket:id="dropDown"></select>
+        </div>
+    </div>
+    <input type="submit" wicket:id="submit"/>
+</form>
+<ul wicket:id="submittedData">
+    <li><span wicket:id="textFieldSubmitted"/></li>
+    <li><pre wicket:id="textAreaSubmitted"/></li>
+    <li><span wicket:id="dropDownSubmitted"/></li>
+</ul>
+</body>
+</html>

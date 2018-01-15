@@ -1,6 +1,6 @@
 Building the demo
 =================
-This demo uses changed wicket 8.0.0-SNAPSHOT from this repository:
+Testing file drag and drop possible with https://github.com/apache/wicket/pull/256/files (WICKET-6517)
 
 Download, build and install with `mvn package` and `mvn install`
 to to make this project use it from your local maven repository.  
