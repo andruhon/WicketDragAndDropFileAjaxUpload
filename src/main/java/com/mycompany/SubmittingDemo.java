@@ -25,12 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Ajax Submit form when files dragged into the drop area or selected in the file input
  */
-public class SubmittingDemo extends WebPage {
-
-    private final FileUploadField filesField;
-
-    private final IModel<List<String>> fileNamesModel = Model.ofList(new ArrayList<>());
-    private WebMarkupContainer uploads;
+public class SubmittingDemo extends AbstractDemoUploadPage {
 
     public SubmittingDemo() {
         this(null);
@@ -38,31 +33,19 @@ public class SubmittingDemo extends WebPage {
 
     public SubmittingDemo(PageParameters parameters) {
         super(parameters);
-        add(new BookmarkablePageLink<EventDemo>("eventDemoLink", EventDemo.class));
-
-        final Form<Object> form = new Form<Object>("form") {
-            @Override
-            protected void onSubmit() {
-                super.onSubmit();
-                System.out.println("form onSubmit");
-                List<FileUpload> fileUploads = filesField.getFileUploads();
-                System.out.println(fileUploads);
-                fileNamesModel.getObject().addAll(fileUploads.stream().map(FileUpload::getClientFileName).collect(Collectors.toList()));
-            }
-        };
-        form.setMultiPart(true);
-        form.setFileMaxSize(Bytes.bytes(5000000));
-        add(form);
-
-        WebMarkupContainer dragAndDropArea = new WebMarkupContainer("dragAndDropArea");
-        filesField = new FileUploadField("files");
-        dragAndDropArea.add(filesField);
 
         filesField.add(new DragAndDropFileUploadAjaxFormSubmittingBehavior(dragAndDropArea) {
             @Override
             protected void onSubmit(AjaxRequestTarget target) {
                 super.onSubmit(target);
                 target.add(uploads);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target) {
+                super.onError(target);
+                messageModel.setObject("an error happened");
+                target.add(messageLabel);
             }
         });
 
@@ -75,18 +58,15 @@ public class SubmittingDemo extends WebPage {
                 filesField.setModelValue(null);
                 target.add(dragAndDropArea, filesField, uploads);
             }
-        });
-        form.add(dragAndDropArea);
 
-        uploads = new WebMarkupContainer("uploads");
-        uploads.setOutputMarkupId(true);
-        uploads.add(new ListView<String>("uploadItem", fileNamesModel) {
             @Override
-            protected void populateItem(ListItem item) {
-                item.add(new Label("filename", item.getModel()));
+            protected void onError(AjaxRequestTarget target) {
+                super.onError(target);
+                messageModel.setObject("an error happened");
+                target.add(messageLabel);
             }
         });
-        add(uploads);
+
     }
 
 }
