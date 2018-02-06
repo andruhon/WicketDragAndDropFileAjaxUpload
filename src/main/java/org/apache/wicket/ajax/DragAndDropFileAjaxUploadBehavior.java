@@ -48,11 +48,12 @@ public abstract class DragAndDropFileAjaxUploadBehavior extends AjaxEventBehavio
     protected CharSequence getCallbackScript(Component component) {
         return
             "Wicket.Ajax.DragAndDropFileUpload({" +
-                "dropArea:'" + dropArea.getMarkupId() + "'," +
-                "c:'" + getFileUploadField().getMarkupId() + "'," +
-                "f:'" + getFileUploadField().getForm().getMarkupId() + "'," +
-                "u:'" + getCallbackUrl() + "'," +
-                "onChangeUpload: " + (onChangeUpload ? "true" : "false") +
+                "dropArea:'" + dropArea.getMarkupId() + "'" +
+                ", c:'" + getFileUploadField().getMarkupId() + "'" +
+                ", f:'" + getFileUploadField().getForm().getMarkupId() + "'" +
+                ", u:'" + getCallbackUrl() + "'" +
+                (getProgressContainer() != null ? (",\"progressContainer\":\"" + getProgressContainer().getMarkupId() + "\"") : "") +
+                ", onChangeUpload: " + (onChangeUpload ? "true" : "false") +
             "})";
     }
 
@@ -98,6 +99,10 @@ public abstract class DragAndDropFileAjaxUploadBehavior extends AjaxEventBehavio
             onFilesUploadException(target, fux, model);
         }
     }
+
+    protected WebMarkupContainer getProgressContainer() {
+        return null;
+    };
 
     protected abstract void onFilesUpload(AjaxRequestTarget target, List<FileUpload> fileUploads);
 

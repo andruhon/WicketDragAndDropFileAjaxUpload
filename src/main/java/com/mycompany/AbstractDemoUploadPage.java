@@ -27,6 +27,7 @@ public abstract class AbstractDemoUploadPage extends WebPage {
     protected final IModel<String> messageModel = Model.of("message");
     protected WebMarkupContainer dragAndDropArea;
     protected Label messageLabel;
+    protected WebMarkupContainer progress;
     protected Form<Object> form;
 
     public AbstractDemoUploadPage() {
@@ -61,6 +62,9 @@ public abstract class AbstractDemoUploadPage extends WebPage {
         dragAndDropArea.add(filesField);
 
         form.add(dragAndDropArea);
+
+        progress = new WebMarkupContainer("progress");
+        add(progress);
 
         uploads = new WebMarkupContainer("uploads");
         uploads.setOutputMarkupId(true);

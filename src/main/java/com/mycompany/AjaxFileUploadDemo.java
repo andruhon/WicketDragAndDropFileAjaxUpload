@@ -2,7 +2,7 @@ package com.mycompany;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.extensions.ajax.markup.html.AjaxFileDropBehavior;
+import org.apache.wicket.extensions.ajax.AjaxFileDropBehavior;
 import org.apache.wicket.markup.html.form.upload.FileUpload;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 

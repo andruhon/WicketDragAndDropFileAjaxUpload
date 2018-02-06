@@ -3,6 +3,7 @@ package com.mycompany;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.DragAndDropFileAjaxUploadBehavior;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.upload.FileUpload;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
@@ -36,7 +37,11 @@ public class EventDemo extends AbstractDemoUploadPage {
                 messageModel.setObject(e.getMessage());
                 target.add(messageLabel);
                 System.out.println(e);
+            }
 
+            @Override
+            protected WebMarkupContainer getProgressContainer() {
+                return progress;
             }
         });
     }
